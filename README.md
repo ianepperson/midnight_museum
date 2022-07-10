@@ -1,4 +1,4 @@
-# midnight_museum
+# Midnight Museum
 Code to drive the lights for the Midnight Museum of That One Time at Burningman
 
 ## Architecture
