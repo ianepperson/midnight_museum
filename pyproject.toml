@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "midnight_museum"
+version = "0.1.0"
+description = "Lights for Midnight Museum of That One Time at Burningman"
+authors = ["Ian Epperson <ian@epperson.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+tasmota = {git = "https://github.com/ianepperson/tasmota_api.git", branch = "main"}
+paho-mqtt = "^1.6.1"
+requests = "^2.27.1"
+
+[tool.poetry.dev-dependencies]
+pdbpp = "^0.10.3"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
