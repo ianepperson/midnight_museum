@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>MQTT Devices</h2>
+<ul>
+{% for sn, device in g.mqtt.discover.devices.items() %}
+<li>
+{% if device.online == True %}
+<a href="http://{{ device.ip_address }}">{{ sn }} - {{ device.topic }}</a>
+{% else %}
+{{ sn }} - {{ device.topic }} (offline)
+{% endif %}
+
+</li>
+
+{% endfor %}
+</ul>
+{% endblock %}
