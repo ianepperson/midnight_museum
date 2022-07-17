@@ -108,8 +108,8 @@ socks = ["PySocks (>=1.5.6,!=1.5.7)"]
 use_chardet_on_py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
-name = "tasmota-api"
-version = "0.1.0"
+name = "tasmota"
+version = "0.2.3"
 description = "Connect to and control Tasmota devices directly via the REST API or via an MQTT server."
 category = "main"
 optional = false
@@ -123,7 +123,7 @@ requests = "^2.27.1"
 type = "git"
 url = "https://github.com/ianepperson/tasmota_api.git"
 reference = "main"
-resolved_reference = "047e8868901ef8b8169247fdb9bbe016d5985e1e"
+resolved_reference = "b2303b3008f14a6aba2df103897a965f359b64ad"
 
 [[package]]
 name = "urllib3"
@@ -149,7 +149,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "17a37c3b1ec704ad4e5d301501d6f25dfd4a4e9c72d8018f1264e623fa1eeec8"
+content-hash = "55a397b2fa2fad122e0967f22b5320a4a2dff2339c3405e022ec2236dd6b78a6"
 
 [metadata.files]
 certifi = []
@@ -179,7 +179,7 @@ pyrepl = [
     {file = "pyrepl-0.9.0.tar.gz", hash = "sha256:292570f34b5502e871bbb966d639474f2b57fbfcd3373c2d6a2f3d56e681a775"},
 ]
 requests = []
-tasmota-api = []
+tasmota = []
 urllib3 = []
 wmctrl = [
     {file = "wmctrl-0.4.tar.gz", hash = "sha256:66cbff72b0ca06a22ec3883ac3a4d7c41078bdae4fb7310f52951769b10e14e0"},
