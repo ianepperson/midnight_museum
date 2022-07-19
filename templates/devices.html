@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>MQTT Devices</h2>
+<h2>Tasmota MQTT Devices</h2>
 <ul>
 {% for sn, device in g.mqtt.discover.devices.items() %}
 <li>

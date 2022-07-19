@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Lantern Setup</h2>
+
+<p>Below shows the relative location of each lantern.</p>
+<p>Each position indicates the ID of the lightbulb.</p>
+
+<form action="/lanterns" method="post">
+
+    <table>
+        {% for topics in g.mqtt.setup.assignment %}
+        <tr>
+        {% set row_num = loop.index0 %}
+            {% for topic in topics %}
+            {% set col_num = loop.index0 %}
+            <td>
+                {{ row_num }}/{{col_num}} - {{ topic }}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %} 
+
+    </table>
+
+<p><input type = "submit" value = "save changes" /></p>
+</form>
+
+{% endblock %}

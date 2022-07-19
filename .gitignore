@@ -130,3 +130,6 @@ dmypy.json
 
 # Swap files
 *.swp
+
+# Setup file
+setup.json

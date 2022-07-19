@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>MQTT Settings</h2>
+
+<p>Status: {{ g.mqtt.status }}</p>
+<form action="/mqtt_setting" method="post">
+    <p>Host: {{ g.mqtt.host }} <input type="text" name="host" /></p>
+<p>Port: {{ g.mqtt.port }} <input type="text" name="port" /></p>
+<p><input type = "submit" value = "save changes" /></p>
+</form>
+
+{% endblock %}
+

@@ -3,10 +3,10 @@ import paho.mqtt.client as mqtt
 
 
 class MQTTHandler:
-    def __init__(self, host='127.0.0.1', port=1883):
-        self.host = host
-        self.port = port
+    def __init__(self, setup):
+        self.setup = setup
         self._lights = {}
+
         self.client = mqtt.Client()
         self.client.on_connect = self._on_connect
         self.client.on_message = self._on_message
@@ -17,13 +17,42 @@ class MQTTHandler:
         self.on_connect = None
         self.on_message = None
 
+        self.status = 'Disconnected'
+
+    @property
+    def host(self):
+        return self.setup.mqtt_host
+
+    @property
+    def port(self):
+        return self.setup.mqtt_port
+
+    def update_connection_settings(self, host, port):
+        print(f'Updating connection settings')
+        self.setup.mqtt_host = host
+        self.setup.mqtt_port = port
+        self.setup.save()
+        self.restart()
+
     def publish(self, *args, **kwargs):
         self.client.publish(*args, **kwargs)
 
     def start(self):
         print(f'Connecting to MQTT server at {self.host}:{self.port}')
-        self.client.connect(self.host, self.port)
-        self.client.loop_start()
+        self.status = 'Connecting...'
+        try:
+            self.client.connect(self.host, self.port)
+        except Exception as e:
+            self.status = e
+        else:
+            self.client.loop_start()
+
+    def restart(self):
+        print(f'Restarting MQTT connection')
+        self.status = 'Restarting...'
+        self.client.disconnect()
+        self.status = 'Disconnected, reconnecting...'
+        self.start()
 
     def stop(self):
         self.client.loop_stop()
@@ -31,6 +60,7 @@ class MQTTHandler:
     def _on_connect(self, client, userdata, flags, rc):
         # subscribe to all channels
         print('MQTT Connected. Listening for any changes')
+        self.status = 'Connected'
         client.subscribe('#')
 
     def _on_message(self, client, userdata, msg):

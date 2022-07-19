@@ -12,8 +12,9 @@ FRAME_SECONDS = 0.2
 
 
 class EffectsHandler:
-    def __init__(self, mqtt):
+    def __init__(self, setup, mqtt):
         self.mqtt = mqtt
+        self.setup = setup
         self._commands = SimpleQueue()
         self._effects_thread = None
         self._last_frame_time = 0.0
