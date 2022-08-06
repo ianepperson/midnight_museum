@@ -13,8 +13,27 @@
         {% set row_num = loop.index0 %}
             {% for topic in topics %}
             {% set col_num = loop.index0 %}
-            <td>
-                {{ row_num }}/{{col_num}} - {{ topic }}
+            <td style="text-align:center;padding-top:30px;padding-bottom:30px">
+
+                {{ row_num }}/{{col_num}}
+                <br/>
+                <select name="topic_{{row_num}}_{{col_num}}">
+                    <option value="None"
+                    {% if not g.mqtt.setup.assignment[row_num][col_num] %}
+                        selected
+                    {% endif %}
+                    >None</option>
+
+                    {% for sn, device in g.mqtt.discover.devices.items() %}
+                        <option 
+                        {% if topic==sn %}
+                            selected
+                        {% endif %}
+                        value="{{ sn }}">{{ sn }}</option>
+                    {% endfor %}
+                </select>
+
+
             </td>
             {% endfor %}
         </tr>

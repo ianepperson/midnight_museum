@@ -6,6 +6,8 @@
     <title>Midnight Museum</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}">
     {% endblock %}
+    {% block extend_head %}
+    {% endblock %}
 </head>
 <body>
     <h1><a href="/">Midnight Museum</a></h1>

@@ -1,11 +1,30 @@
+from threading import Lock
+import logging
+
 from tasmota import Light, Discover
 import paho.mqtt.client as mqtt
+
+log = logging.getLogger(__name__)
+
+GLOBAL_HANDLER = None
+HANDLER_LOCK = Lock()
+
+
+def get_mqtt_handler(setup):
+    '''Get the singleton of the handler'''
+    global GLOBAL_HANDLER
+    if HANDLER_LOCK.acquire(timeout=0.1):
+        if not GLOBAL_HANDLER:
+            GLOBAL_HANDLER = MQTTHandler(setup)
+
+    return GLOBAL_HANDLER
 
 
 class MQTTHandler:
     def __init__(self, setup):
         self.setup = setup
         self._lights = {}
+        self._started = Lock()
 
         self.client = mqtt.Client()
         self.client.on_connect = self._on_connect
@@ -20,6 +39,10 @@ class MQTTHandler:
         self.status = 'Disconnected'
 
     @property
+    def started(self):
+        return self._started.locked()
+
+    @property
     def host(self):
         return self.setup.mqtt_host
 
@@ -28,7 +51,7 @@ class MQTTHandler:
         return self.setup.mqtt_port
 
     def update_connection_settings(self, host, port):
-        print(f'Updating connection settings')
+        log.info(f'Updating connection settings to {host=} {port=}')
         self.setup.mqtt_host = host
         self.setup.mqtt_port = port
         self.setup.save()
@@ -38,7 +61,11 @@ class MQTTHandler:
         self.client.publish(*args, **kwargs)
 
     def start(self):
-        print(f'Connecting to MQTT server at {self.host}:{self.port}')
+        if not self._started.acquire(blocking=False):
+            log.info('MQTT server already started')
+            return
+
+        log.info(f'Connecting to MQTT server at {self.host}:{self.port}')
         self.status = 'Connecting...'
         try:
             self.client.connect(self.host, self.port)
@@ -48,18 +75,20 @@ class MQTTHandler:
             self.client.loop_start()
 
     def restart(self):
-        print(f'Restarting MQTT connection')
+        log.info(f'Restarting MQTT connection')
         self.status = 'Restarting...'
         self.client.disconnect()
         self.status = 'Disconnected, reconnecting...'
+        self._started.release()
         self.start()
 
     def stop(self):
         self.client.loop_stop()
+        self._started.release()
 
     def _on_connect(self, client, userdata, flags, rc):
         # subscribe to all channels
-        print('MQTT Connected. Listening for any changes')
+        log.info('MQTT Connected. Listening for any changes')
         self.status = 'Connected'
         client.subscribe('#')
 
@@ -67,7 +96,7 @@ class MQTTHandler:
         # All status messages start with "stat/"
         # topic="stat/tasmota_197CD7/POWER1" payload="ON"
 
-        print(f'MQTT Received {msg.topic} :: {msg.payload}')
+        log.debug(f'MQTT Received {msg.topic} :: {msg.payload}')
 
         if not msg or not msg.topic or not msg.topic.startswith('stat/'):
             return
@@ -89,7 +118,7 @@ class MQTTHandler:
             return
 
     def _on_new_device(self, device):
-        print(f'new device {device.sn}')
+        log.info(f'new device {device.sn}')
 
     def get_light(self, light_id) -> Light:
         '''Get a light by its ID.

@@ -31,23 +31,30 @@ def mqtt_setting():
 @app.route('/lanterns', methods=['POST', 'GET'])
 def lanterns():
     if request.method == 'POST':
-        pass
+        changed = False
+        for row_num, row in enumerate(g.mqtt.setup.assignment[:]):
+            for col_num, topic in enumerate(row[:]):
+                new_topic = request.form.get(f'topic_{row_num}_{col_num}')
+                if new_topic.lower() == 'none':
+                    new_topic = None
+
+                if topic != new_topic:
+                    g.mqtt.setup.assignment[row_num][col_num] = new_topic
+                    changed = True
+        if changed:
+            g.mqtt.setup.save()
 
     # Jinja2 requires tricks for a nested list. Easier to just flatten it
-    flat_lantern_topics = []
-    for topic_row in g.mqtt.setup.assignment:
-        flat_lantern_topics += topic_row
+    # flat_lantern_topics = []
+    # for topic_row in g.mqtt.setup.assignment:
+    #     flat_lantern_topics += topic_row
 
     # Hydrate the flat list of lanterns for the template
-    flat_lanterns = [
-        g.mqtt.discover.devices.get(topic)
-        for topic in flat_lantern_topics
-    ]
+    # flat_lanterns = [
+    #     g.mqtt.discover.devices.get(topic)
+    #     for topic in flat_lantern_topics
+    # ]
 
-    lantern_row_len = len(g.mqtt.setup.assignment)
+    # lantern_row_len = len(g.mqtt.setup.assignment)
 
-    return render_template(
-        'lanterns.html',
-        lantern_row_len=lantern_row_len,
-        flat_lanterns=flat_lanterns
-    )
+    return render_template('lanterns.html')

@@ -3,8 +3,8 @@ import logging
 
 import flask
 
-from mqtt import MQTTHandler
-from effects import EffectsHandler
+from mqtt import get_mqtt_handler
+from effects import get_effects_handler
 from setup import Setup
 from web_server import app
 
@@ -12,13 +12,29 @@ from web_server import app
 logging.basicConfig(level=logging.DEBUG)
 
 
-def go(setup_file, http_server_port):
-    setup = Setup(setup_file)
+def create_app():
     print('Starting MQTT handler...')
-    mqtt = MQTTHandler(setup)
+    mqtt = get_mqtt_handler(setup)
     mqtt.start()
     print('Starting effects handler...')
-    effects_handler = EffectsHandler(setup, mqtt)
+    effects_handler = get_effects_handler(setup, mqtt)
+    effects_handler.start()
+
+    @app.before_request
+    def load_controls():
+        flask.g.mqtt = mqtt
+        flask.g.effects = effects_handler
+        flask.g.setup = setup
+
+    return app
+
+
+def go(setup, http_server_port):
+    print('Starting MQTT handler...')
+    mqtt = get_mqtt_handler(setup)
+    mqtt.start()
+    print('Starting effects handler...')
+    effects_handler = get_effects_handler(setup, mqtt)
     effects_handler.start()
 
     @app.before_request
@@ -40,7 +56,7 @@ def go(setup_file, http_server_port):
         print('Halting MQTT handler...')
         mqtt.stop()
 
-    print(f'Saving the setup to {setup_file}')
+    # print(f'Saving the setup to {setup_file}')
     setup.save()
 
     print('Done.')
@@ -65,5 +81,10 @@ if __name__ == '__main__':
 
     # Grab the arguments
     args = parser.parse_args()
+    # Create the setup file
+    setup = Setup(args.setup)
     # Run with it
-    go(args.setup, args.http_server_port)
+    # go(setup, args.http_server_port)
+
+    app_ = create_app()
+    app_.run(debug=True, port=args.http_server_port)

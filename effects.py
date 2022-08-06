@@ -1,6 +1,22 @@
-from threading import Thread
+from threading import Thread, Lock
 from queue import SimpleQueue, Empty
 from time import time
+import logging
+
+log = logging.getLogger(__name__)
+
+GLOBAL_HANDLER = None
+HANDLER_LOCK = Lock()
+
+
+def get_effects_handler(setup, mqtt):
+    '''Get the singleton of the handler'''
+    global GLOBAL_HANDLER
+    if HANDLER_LOCK.acquire(timeout=0.1):
+        if not GLOBAL_HANDLER:
+            GLOBAL_HANDLER = EffectsHandler(setup, mqtt)
+
+    return GLOBAL_HANDLER
 
 
 class Commands:
@@ -15,6 +31,7 @@ class EffectsHandler:
     def __init__(self, setup, mqtt):
         self.mqtt = mqtt
         self.setup = setup
+        self._started = Lock()
         self._commands = SimpleQueue()
         self._effects_thread = None
         self._last_frame_time = 0.0
@@ -23,7 +40,15 @@ class EffectsHandler:
         # with the value being a Tasmota Light object
         self.lights = {}
 
+    @property
+    def started(self):
+        return self._started.locked()
+
     def start(self):
+        if not self._started.acquire(blocking=False):
+            log.info('Effects server already started')
+            return
+
         if self._effects_thread is None:
             self._effects_thread = Thread(
                 target=self._handle_effects,
@@ -35,6 +60,7 @@ class EffectsHandler:
         # TODO: empty the queue first?
         self._commands.put_nowait((Commands.stop, None))
         self._effects_thread.join()
+        self._started.release()
 
     def add_light(self, position, light_id):
         self.lights[position] = self.mqtt.get_light(light_id)
