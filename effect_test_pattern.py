@@ -7,7 +7,7 @@ green = (0, 128, 0)
 blue = (0, 0, 255)
 off = (0, 0, 0)
 
-rainbow = [red, orange, yellow, green. blue]
+rainbow = [red, orange, yellow, green, blue]
 
 
 class TestPattern(Effect):
@@ -30,7 +30,7 @@ class TestPattern(Effect):
 
         if self.step % 5 in (3, 4):
             off_row = int(self.step / 5)
-            if off_row > 5:
+            if off_row >= 5:
                 self.step = 0
                 return
 
