@@ -65,7 +65,7 @@ class EffectsHandler:
                 name='effects'
             )
         self._effects_thread.start()
-        log.info('XXXX Effects server started')
+        log.info('Effects server started')
 
     def stop(self):
         # TODO: empty the queue first?
@@ -100,21 +100,6 @@ class EffectsHandler:
             sn = self.setup.assignment[row][col]
             # send it!
             self._send_pixel(sn, f'{color[0],color[1],color[2]}')
-
-    # def _send_frame(self):
-    #     # Bounce a variable up and down
-    #     if self.level + self.step > 255:
-    #         self.step = -self.step
-    #         self.level = 255
-
-    #     if self.level + self.step < 0:
-    #         self.step = -self.step
-    #         self.level = 0
-
-    #     self.level += self.step
-
-    #     sn = self.setup.assignment[0][0]
-    #     self._send_pixel(sn, f'{self.level},0,0')
 
     def _next_frame(self) -> float:
         '''
