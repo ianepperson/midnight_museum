@@ -87,4 +87,4 @@ if __name__ == '__main__':
     # go(setup, args.http_server_port)
 
     app_ = create_app()
-    app_.run(debug=True, port=args.http_server_port)
+    app_.run(port=args.http_server_port)
