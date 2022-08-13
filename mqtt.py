@@ -25,6 +25,7 @@ class MQTTHandler:
         self.setup = setup
         self._lights = {}
         self._started = Lock()
+        self._userdata = None
 
         self.client = mqtt.Client()
         self.client.on_connect = self._on_connect
@@ -37,6 +38,9 @@ class MQTTHandler:
         self.on_message = None
 
         self.status = 'Disconnected'
+
+    def user_data_set(self, value):
+        self._userdata = value
 
     @property
     def started(self):
@@ -125,7 +129,18 @@ class MQTTHandler:
 
         Returns a tasmota.Light object.
         '''
+        if not light_id:
+            return None
+
+        device = self.discover.devices.get(light_id)
+
+        if not device:
+            return None
+
+        # device.topic
         if light_id not in self._lights:
-            self._lights[light_id] = Light(mqtt_client=self, topic=light_id)
+            self._lights[light_id] = Light(
+                mqtt_client=self, topic=device.topic
+            )
 
         return self._lights[light_id]
