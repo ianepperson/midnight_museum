@@ -6,9 +6,7 @@ authors = ["Ian Epperson <ian@epperson.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.10"
-tasmota = {git = "https://github.com/ianepperson/tasmota_api.git", branch = "main"}
-paho-mqtt = "^1.6.1"
+python = "^3.9"
 requests = "^2.27.1"
 aioesphomeapi = "^10.11.0"
 quart = "^0.18.0"
