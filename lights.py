@@ -42,6 +42,25 @@ class Light:
         if self._connection_manager:
             self._connection_manager.cancel()
 
+    def _spawn_handlers(self):
+        self._change_handler = create_task(
+            self.client.subscribe_states(self._change_callback)
+        )
+        self._service_calls_handler = create_task(
+            self.client.subscribe_service_calls(self._service_calls_callback)
+        )
+
+    async def get_key(self):
+        sensors, services = await self.client.list_entities_services()
+        for sensor in sensors:
+            if sensor.object_id == 'kauf_bulb':
+                log.debug(f'{self.host} using {sensor=}')
+                return sensor.key
+
+        # key = 2723974766
+        log.error(f'{self.host} UNABLE TO FIND A GOOD KEY. Trying default')
+        return 2723974766
+
     async def _run(self):
         if not self.host:
             # If there's actually no host to connect to, just perform NOOP
@@ -51,7 +70,7 @@ class Light:
             self._change_handler = None
             self.client = APIClient(self.host, 6053, None)
             try:
-                await self.client.connect(login=False)
+                await self.client.connect(login=True)
             except CancelledError:
                 log.info(f'{self.host} Exiting connection manager')
                 return
@@ -62,22 +81,15 @@ class Light:
                 sleep(10)
                 continue
 
-            # Spawn the change handler
-            self._change_handler = create_task(
-                self.client.subscribe_states(self._change_callback)
-            )
-            self._service_calls_handler = create_task(
-                self.client.subscribe_service_calls(
-                    self._service_calls_callback
-                )
-            )
+            self._spawn_handlers()
+            key = await self.get_key()
 
             try:
                 while True:
                     # Pass along all commands to the client
                     cmd = await self._command_queue.get()
                     log.debug(f'{self.host} :: sending light_command({cmd})')
-                    self.client.light_command(**cmd)
+                    await self.client.light_command(key=key, **cmd)
             except CancelledError:
                 log.info(f'{self.host} Exiting connection manager')
                 return
@@ -85,6 +97,7 @@ class Light:
                 return
             except Exception as e:
                 log.error(f'{self.host} Error while sending. {e}')
+                log.debug(f'{self.host} pausing for 10 seconds to reconnect')
                 sleep(10)
             finally:
                 await self.client.disconnect()
@@ -99,7 +112,6 @@ class Light:
 
     def command(self, **cmd):
         '''
-        key: int,
         state: Optional[bool] = None,
         brightness: Optional[float] = None,
         color_mode: Optional[int] = None,

@@ -13,11 +13,14 @@ async def main():
     lights.start()
 
     run_ = True
-    sleep_time = 3
+    sleep_time = 5
     while run_:
         await asyncio.sleep(sleep_time)
         # breakpoint()
-
+        lights[0][0].command(rgb=(1.0, 0, 0.5), brightness=0.5)
+        lights[0][1].command(rgb=(0, 1.0, 0), brightness=0.5)
+        # sensors, services = await client.list_entities_services()
+        # print(f'{sensors=}, {services=}')
 
 # async def main():
 #     """Connect to an ESPHome device and wait for state changes."""
