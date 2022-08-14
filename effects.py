@@ -1,8 +1,8 @@
-import asyncio
+from asyncio import create_task, sleep, CancelledError
 from threading import Lock
-from queue import SimpleQueue, Empty
 from time import time
 import logging
+import traceback
 
 from effect_base import Effect as BaseEffect
 from effect_test_pattern import TestPattern
@@ -13,12 +13,12 @@ GLOBAL_HANDLER = None
 HANDLER_LOCK = Lock()
 
 
-def get_effects_handler(setup, mqtt):
+def get_effects_handler(setup, lights):
     '''Get the singleton of the handler'''
     global GLOBAL_HANDLER
     if HANDLER_LOCK.acquire(timeout=0.1):
         if not GLOBAL_HANDLER:
-            GLOBAL_HANDLER = EffectsHandler(setup, mqtt)
+            GLOBAL_HANDLER = EffectsHandler(setup, lights)
 
     return GLOBAL_HANDLER
 
@@ -35,80 +35,50 @@ class EffectsHandler:
     def __init__(self, setup, lights):
         self.lights = lights
         self.setup = setup
-        self._started = Lock()
-        self._commands = asyncio.Queue()
+        self._started = False
         self._effects_thread = None
         self._last_frame_time = 0.0
 
         # Instantiate a base effect for use as a "last position"
         self._last_effect = BaseEffect()
 
-        # lights is a dictionary of position (x, y) where each is 1-5
-        # with the value being a Tasmota Light object
-        self.lights = {}
-
         self.effect = TestPattern()
-        self.step = 5
-        self.level = 0
+        self.level = 1.0
 
     @property
     def started(self):
-        return self._started.locked()
+        return self._started
 
-    async def start(self):
-        if not self._started.acquire(blocking=False):
+    def start(self):
+        if self.started:
             log.info('Effects server already started')
             return
 
-        if self._effects_thread is None:
-            self._effects_thread = Thread(
-                target=self._handle_effects,
-                name='effects'
-            )
-        self._effects_thread.start()
+        self._effects_thread = create_task(self._handle_effects())
+        self._started = True
         log.info('Effects server started')
 
     def stop(self):
-        # TODO: empty the queue first?
-        self._commands.put_nowait((Commands.stop, None))
-        self._effects_thread.join()
-        self._started.release()
-
-    def add_light(self, position, light_id):
-        self.lights[position] = self.mqtt.get_light(light_id)
-
-    def load_image(self, image):
-        self._commands.put(Commands.load_image, image)
-
-    def _load_image(self, image):
-        # TODO: handle loading the new image into memory
-        pass
-
-    def _send_pixel(self, sn, color):
-        light = self.mqtt.get_light(sn)
-        if not light:
-            return
-
-        light.cmd.color(color)
+        if self._effects_thread:
+            self._effects_thread.cancel()
+        self._started = False
 
     def _send_frame(self):
         '''Send the next frame of the animation'''
         # Progress the animation by a step
         self.effect.next_frame()
+        log.debug(f'effect step now at {self.effect.step}')
         # Walk through any pixels that changed
-        for (row, col), color in self._last_effect.get_diff(self._last_effect):
-            r, g, b = color
-            self.lights[row][col].command(rgb=(0.5, 0.5, 0.5))  # ???
-            # Look up the light assigned to that pixel
-            # sn = self.setup.assignment[row][col]
-            # # send it!
-            # self._send_pixel(sn, f'{color[0],color[1],color[2]}')
+        for (row, col), color in self._last_effect.get_diff(self.effect):
+            log.debug(f'changed {col=} {row=} {color=}')
+            self.lights[row][col].command(
+                rgb=color, color_brightness=self.level, transition_length=0.1
+            )
 
     def _next_frame(self) -> float:
         '''
         Runs the next frame and returns how long to wait before calling again
         '''
-        # TODO: handle sending the next set of commands to the lights
         now = time()
         next_time = self._last_frame_time + FRAME_SECONDS
         # we haven't reached our time yet
@@ -121,20 +91,18 @@ class EffectsHandler:
         self._last_frame_time = now
         return FRAME_SECONDS + 0.001
 
-    def _handle_effects(self):
-        wait_time = 0.1
+    async def _handle_effects(self):
+        log.info('Effects handler running')
+        wait_time = 1
         while True:
             try:
-                # Maybe refactor? If lots of commands come in the frames will
-                # be delayed. Maybe not a problem?
-                (cmd, data) = self._commands.get(timeout=wait_time)
-            except Empty:
                 wait_time = self._next_frame()
-                continue
+            except CancelledError:
+                return
+            except Exception as e:
+                log.error(f'While getting next frame: {e!r}')
+                breakpoint()
 
-            match cmd:
-                case Commands.stop:
-                    break
+                traceback.print_exc()
 
-                case Commands.load_image:
-                    self.load_image(data)
+            await sleep(wait_time)

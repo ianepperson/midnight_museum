@@ -1,10 +1,10 @@
 from effect_base import Effect
 
-red = (255, 0, 0)
-orange = (255, 165, 0)
-yellow = (255, 255, 0)
-green = (0, 128, 0)
-blue = (0, 0, 255)
+red = (1.0, 0, 0)
+orange = (1.0, 0.65, 0)
+yellow = (1.0, 1.0, 0)
+green = (0, 1.0, 0)
+blue = (0, 0, 1.0)
 off = (0, 0, 0)
 
 rainbow = [red, orange, yellow, green, blue]

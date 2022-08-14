@@ -14,19 +14,19 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def create_app():
-    # print('Starting MQTT handler...')
-    # mqtt = get_mqtt_handler(setup)
-    # mqtt.start()
-    print('Starting lights communication')
     lights_handler = get_lights(setup)
 
-    print('Starting effects handler...')
     effects_handler = get_effects_handler(setup, lights_handler)
-    effects_handler.start()
+
+    @app.before_serving
+    async def startup():
+        print('Starting lights communication...')
+        lights_handler.start()
+        print('Starting effects handler...')
+        effects_handler.start()
 
     @app.before_request
     def load_controls():
-        # quart.g.mqtt = mqtt
         quart.g.lights = lights_handler
         quart.g.effects = effects_handler
         quart.g.setup = setup

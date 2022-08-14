@@ -130,6 +130,19 @@ class Light:
             # If the queue is full (not connected) just clear it out
             self._command_queue.get_nowait()
 
+        cmd.setdefault('state', True)
+
+        if cmd.get('rgb') == (0, 0, 0):
+            cmd['state'] = False
+
+        rgb = cmd.get('rgb')
+        if rgb:
+            brightness = cmd.get('color_brightness', 1.0) * max(rgb)
+            if brightness < 0.1:
+                cmd['state'] = False
+            else:
+                cmd['color_brightness'] = brightness
+
         log.debug(f'{self.host} :: queueing command {cmd}')
         self._command_queue.put_nowait(cmd)
 
