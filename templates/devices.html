@@ -1,14 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Tasmota MQTT Devices</h2>
+<h2>Configured Lights</h2>
 <ul>
-{% for sn, device in g.mqtt.discover.devices.items() %}
+{% for host, handler in g.lights.handlers.items() %}
 <li>
-{% if device.online == True %}
-<a href="http://{{ device.ip_address }}">{{ sn }} - {{ device.topic }}</a>
-{% else %}
-{{ sn }} - {{ device.topic }} (offline)
-{% endif %}
+    <a href="http://{{ host }}">{{ host }}</a> {{ handler.state }}
 
 </li>
 

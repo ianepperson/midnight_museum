@@ -101,7 +101,6 @@ class EffectsHandler:
                 return
             except Exception as e:
                 log.error(f'While getting next frame: {e!r}')
-                breakpoint()
 
                 traceback.print_exc()
 

@@ -3,36 +3,25 @@
 <h2>Lantern Setup</h2>
 
 <p>Below shows the relative location of each lantern.</p>
-<p>Each position indicates the ID of the lightbulb.</p>
+<p>Each position indicates the host name or IP of the lightbulb.</p>
 
 <form action="/lanterns" method="post">
 
     <table>
-        {% for topics in g.mqtt.setup.assignment %}
+        {% for hosts in g.setup.assignment %}
         <tr>
         {% set row_num = loop.index0 %}
-            {% for topic in topics %}
+            {% for host in hosts %}
             {% set col_num = loop.index0 %}
             <td style="text-align:center;padding-top:30px;padding-bottom:30px">
 
-                {{ row_num }}/{{col_num}}
+                {{ row_num * 5 + col_num + 1 }} :: {{ row_num }}/{{col_num}}
                 <br/>
-                <select name="topic_{{row_num}}_{{col_num}}">
-                    <option value="None"
-                    {% if not g.mqtt.setup.assignment[row_num][col_num] %}
-                        selected
-                    {% endif %}
-                    >None</option>
-
-                    {% for sn, device in g.mqtt.discover.devices.items() %}
-                        <option 
-                        {% if topic==sn %}
-                            selected
-                        {% endif %}
-                        value="{{ sn }}">{{ device.topic }}</option>
-                    {% endfor %}
-                </select>
-
+                <input name="host_{{row_num}}_{{col_num}}", value="{{host or ''}}" />
+                {% if host %}
+                <hr>
+                <a href="http://{{host}}">{{host}}</a>
+                {% endif %}
 
             </td>
             {% endfor %}

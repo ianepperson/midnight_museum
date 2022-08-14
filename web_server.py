@@ -1,47 +1,39 @@
+import logging
 from quart import Quart, g, render_template, request
 # , redirect, url_for
 
 app = Quart(__name__)
 
+log = logging.getLogger(__name__)
+
 
 @app.route('/')
-def home():
-    return render_template('index.html')
+async def home():
+    return await render_template('index.html')
 
 
 @app.route('/devices')
-def devices():
-    return render_template('devices.html')
-
-
-# @app.route('/mqtt_setting', methods=['POST', 'GET'])
-# def mqtt_setting():
-#     if request.method == 'POST':
-#         host = request.form.get('host')
-#         port = request.form.get('port')
-
-#         host = host or g.setup.mqtt_host
-#         port = port or g.setup.mqtt_port
-#         if host != g.setup.mqtt_host or port != g.setup.mqtt_port:
-#             g.mqtt.update_connection_settings(host, port)
-
-#     return render_template('mqtt_setting.html')
+async def devices():
+    return await render_template('devices.html')
 
 
 @app.route('/lanterns', methods=['POST', 'GET'])
-def lanterns():
-    if request.method == 'POST':
+async def lanterns():
+    if request.method.upper() == 'POST':
         changed = False
-        for row_num, row in enumerate(g.mqtt.setup.assignment[:]):
-            for col_num, topic in enumerate(row[:]):
-                new_topic = request.form.get(f'topic_{row_num}_{col_num}')
-                if new_topic.lower() == 'none':
-                    new_topic = None
+        for row_num, row in enumerate(g.setup.assignment[:]):
+            for col_num, host in enumerate(row[:]):
+                form = await request.form
+                new_host = form.get(f'host_{row_num}_{col_num}')
+                if new_host.lower() == 'none' or not new_host:
+                    new_host = None
 
-                if topic != new_topic:
-                    g.mqtt.setup.assignment[row_num][col_num] = new_topic
+                log.debug(f'  {row_num=} {col_num=} {host=} {new_host=}')
+                if host != new_host:
+                    g.setup.assignment[row_num][col_num] = new_host
                     changed = True
         if changed:
-            g.mqtt.setup.save()
+            g.setup.save()
+            g.lights.setup_handlers()
 
-    return render_template('lanterns.html')
+    return await render_template('lanterns.html')

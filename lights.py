@@ -6,7 +6,6 @@ from aioesphomeapi import APIClient
 from setup import GRID_SIZE
 
 log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 
 # IP_PREFIX = '192.168.9.1'  # 192.168.9.101 - 125
@@ -24,6 +23,7 @@ def get_lights(setup):
 class Light:
     def __init__(self, host):
         self.host = host
+        self.state = 'Initialized'
         self._command_queue = Queue(maxsize=1)
         self._change_handler = None
         self._service_calls_handler = None
@@ -32,9 +32,11 @@ class Light:
         return f'<Light(host="{self.host}")>'
 
     def start(self):
+        self.state = 'Running'
         self._connection_manager = create_task(self._run())
 
     def stop(self):
+        self.state = 'Stopped'
         if self._change_handler:
             self._change_handler.cancel()
         if self._service_calls_handler:
@@ -77,12 +79,15 @@ class Light:
             except KeyboardInterrupt:
                 return
             except Exception as e:
-                log.error(f'Could not connect to {self.host}: {e}')
+                log.error(f'Could not connect to {self.host}: {e!r}')
+                self.state = f'Connection error {e!r}'
                 sleep(10)
                 continue
 
             self._spawn_handlers()
             key = await self.get_key()
+
+            self.state = 'Running'
 
             try:
                 while True:
@@ -96,7 +101,8 @@ class Light:
             except KeyboardInterrupt:
                 return
             except Exception as e:
-                log.error(f'{self.host} Error while sending. {e}')
+                log.error(f'{self.host} Error while sending. {e!r}')
+                self.state = f'Transmission error {e!r}'
                 log.debug(f'{self.host} pausing for 10 seconds to reconnect')
                 sleep(10)
             finally:
@@ -153,8 +159,11 @@ class Lights:
         self.setup = setup
         self._handlers = []
         self._handler_by_host = {}
-        offset = 0
+        self.setup_handlers()
 
+    def setup_handlers(self):
+        offset = 0
+        self._handlers = []
         # Generate a 5x5 grid
         for row_num in range(GRID_SIZE):
             row = []
@@ -170,8 +179,16 @@ class Lights:
                     light = Light(host)
                     self._handler_by_host[host] = light
 
-                # host = f'{IP_PREFIX}{offset:02d}'
                 row.append(light)
+
+    @property
+    def handlers(self):
+        handlers = self._handler_by_host.copy()
+        try:
+            del handlers[None]
+        except KeyError:
+            pass
+        return handlers
 
     def __getitem__(self, row: int):
         return self._handlers[row]
