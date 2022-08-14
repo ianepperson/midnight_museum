@@ -159,6 +159,7 @@ class Lights:
         self.setup = setup
         self._handlers = []
         self._handler_by_host = {}
+        self._started = False
         self.setup_handlers()
 
     def setup_handlers(self):
@@ -178,6 +179,8 @@ class Lights:
                         log.info(f'Setting up a handler for "{host}"')
                     light = Light(host)
                     self._handler_by_host[host] = light
+                    if self._started:
+                        light.start()
 
                 row.append(light)
 
@@ -200,8 +203,11 @@ class Lights:
         for row in self._handlers:
             for light in row:
                 light.start()
+        self._started = True
 
     def stop(self):
         for row in self._handlers:
             for light in row:
                 light.stop()
+
+        self._started = False
