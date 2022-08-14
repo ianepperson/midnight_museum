@@ -133,3 +133,6 @@ dmypy.json
 
 # Setup file
 setup.json
+
+# Compiled files
+*.bin.gz

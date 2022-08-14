@@ -1,4 +1,5 @@
-from threading import Thread, Lock
+import asyncio
+from threading import Lock
 from queue import SimpleQueue, Empty
 from time import time
 import logging
@@ -31,11 +32,11 @@ FRAME_SECONDS = 0.2
 
 
 class EffectsHandler:
-    def __init__(self, setup, mqtt):
-        self.mqtt = mqtt
+    def __init__(self, setup, lights):
+        self.lights = lights
         self.setup = setup
         self._started = Lock()
-        self._commands = SimpleQueue()
+        self._commands = asyncio.Queue()
         self._effects_thread = None
         self._last_frame_time = 0.0
 
@@ -54,7 +55,7 @@ class EffectsHandler:
     def started(self):
         return self._started.locked()
 
-    def start(self):
+    async def start(self):
         if not self._started.acquire(blocking=False):
             log.info('Effects server already started')
             return
@@ -96,10 +97,12 @@ class EffectsHandler:
         self.effect.next_frame()
         # Walk through any pixels that changed
         for (row, col), color in self._last_effect.get_diff(self._last_effect):
+            r, g, b = color
+            self.lights[row][col].command(rgb=(0.5, 0.5, 0.5))  # ???
             # Look up the light assigned to that pixel
-            sn = self.setup.assignment[row][col]
-            # send it!
-            self._send_pixel(sn, f'{color[0],color[1],color[2]}')
+            # sn = self.setup.assignment[row][col]
+            # # send it!
+            # self._send_pixel(sn, f'{color[0],color[1],color[2]}')
 
     def _next_frame(self) -> float:
         '''
