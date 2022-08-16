@@ -3,19 +3,15 @@ Code to drive the lights for the Midnight Museum of That One Time at Burningman
 
 ## Architecture
 
-The project uses light bulbs and microcontrollers with the Tasmota firmware loaded. It depends on a device (Raspberry Pi) running an MQTT server,
-and all the Tasmota devices logged into that server.
+The project uses light bulbs and microcontrollers with the ESPHome firmware loaded. The main code connects directly to each bulb and issues commands.
 
 ### Threads
 
-There are many I/O bound tasks that run the museum lights. Ideally the tasks would be run using the Python async/await cooperative threads, but neither the Python
-MQTT library nor the Requests library are awaitable - which makes communicating with the hardware difficult. Therefore, the code uses a couple of Python
-threads (GIL be dammed) to handle concurrency, which coordinate via queues.
+There are many I/O bound tasks that run the museum lights. The tasks are run using the Python async/await cooperative threads. Direct references to different handlers are passed to the instantiation to allow control across async threads.
 
 1) Lights Communication Thread - handles sending messages to the Lights via ESPHome.
 2) Effects Driver Thread - calculates the light values and transmits them to the MQTT Comms Thread via a queue.
-3) Playa Logic - ("Business Logic" but business has no business here!) process triggers from any buttons connected to MQTT and run the web server for
-setup. (not implemented)
+3) Webserver Thread - handles web requests using the [Quart](https://quart.palletsprojects.com/en/latest/index.html) microframework.
 
 ## Effects Driver
 
