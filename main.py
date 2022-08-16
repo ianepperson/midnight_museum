@@ -31,6 +31,12 @@ def create_app():
         quart.g.effects = effects_handler
         quart.g.setup = setup
 
+    @app.before_websocket
+    def load_ws_controls():
+        quart.g.lights = lights_handler
+        quart.g.effects = effects_handler
+        quart.g.setup = setup
+
     return app
 
 

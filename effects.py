@@ -1,4 +1,4 @@
-from asyncio import create_task, sleep, CancelledError
+from asyncio import create_task, sleep, CancelledError, Queue, QueueFull
 from threading import Lock
 from time import time
 import logging
@@ -37,6 +37,7 @@ class EffectsHandler:
         self.setup = setup
         self._started = False
         self._effects_thread = None
+        self._change_queues = []
         self._last_frame_time = 0.0
 
         # Instantiate a base effect for use as a "last position"
@@ -63,6 +64,24 @@ class EffectsHandler:
             self._effects_thread.cancel()
         self._started = False
 
+    def get_change_queue(self) -> Queue:
+        '''Get a queue that sends all light changes as events.'''
+        # 5x5 grid, 2 frames max = 50
+        # If the queue overflows, it's automatically culled
+        changes = Queue(maxsize=50)
+        self._change_queues.append(changes)
+        return changes
+
+    def _send_to_change_queues(self, **message):
+        for changes in self._change_queues[:]:
+            try:
+                changes.put_nowait(message)
+            except QueueFull:
+                self._change_queues.remove(changes)
+                changes.get_nowait()
+                changes.put_nowait('closed')
+                log.info('Removing full queue')
+
     def _send_frame(self):
         '''Send the next frame of the animation'''
         # Progress the animation by a step
@@ -71,8 +90,18 @@ class EffectsHandler:
         # Walk through any pixels that changed
         for (row, col), color in self._last_effect.get_diff(self.effect):
             log.debug(f'changed {col=} {row=} {color=}')
+            transition_length = 0.1
+            # This might be reworked to use the same call
             self.lights[row][col].command(
-                rgb=color, color_brightness=self.level, transition_length=0.1
+                rgb=color,
+                color_brightness=self.level,
+                transition_length=transition_length
+            )
+            self._send_to_change_queues(
+                position=(row, col),
+                rgb=color,
+                color_brightness=self.level,
+                transition_length=transition_length
             )
 
     def _next_frame(self) -> float:

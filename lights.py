@@ -24,12 +24,25 @@ class Light:
     def __init__(self, host):
         self.host = host
         self.state = 'Initialized'
+        self._last_rgb = None
+        self._last_bright = None
+        self._last_on = None
         self._command_queue = Queue(maxsize=1)
         self._change_handler = None
         self._service_calls_handler = None
 
     def __repr__(self):
         return f'<Light(host="{self.host}")>'
+
+    @property
+    def info(self) -> dict:
+        return {
+            'host': self.host,
+            'state': self.state,
+            'rgb': self._last_rgb,
+            'brightness': self._last_bright,
+            'on': self._last_on
+        }
 
     def start(self):
         self.state = 'Running'
@@ -149,6 +162,9 @@ class Light:
             else:
                 cmd['color_brightness'] = brightness
 
+        self._last_rgb = cmd.get('rgb', self._last_rgb)
+        self._last_bright = cmd.get('color_brightness', self._last_bright)
+        self._last_on = cmd.get('state', self._last_on)
         log.debug(f'{self.host} :: queueing command {cmd}')
         self._command_queue.put_nowait(cmd)
 
@@ -192,6 +208,10 @@ class Lights:
         except KeyError:
             pass
         return handlers
+
+    @property
+    def info(self):
+        return [[light.info for light in row] for row in self._handlers]
 
     def __getitem__(self, row: int):
         return self._handlers[row]

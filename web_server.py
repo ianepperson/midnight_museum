@@ -1,5 +1,7 @@
+import json
 import logging
-from quart import Quart, g, render_template, request
+from quart import Quart, g, render_template, request, websocket
+
 # , redirect, url_for
 
 app = Quart(__name__)
@@ -37,3 +39,19 @@ async def lanterns():
             g.lights.setup_handlers()
 
     return await render_template('lanterns.html')
+
+
+@app.websocket('/ws')
+async def ws():
+    await websocket.accept()
+    fx_changes = g.effects.get_change_queue()
+    await websocket.send(json.dumps(['started', None]))
+    await websocket.send(json.dumps(['light info', g.lights.info]))
+    while True:
+        message = await fx_changes.get()
+        await websocket.send(json.dumps(['light change', message]))
+        # We'll get a single 'closed' message if the changes queue fills
+        # which might happen if the connection is too slow.
+        if message == 'closed':
+            await websocket.close(1000)
+            return
