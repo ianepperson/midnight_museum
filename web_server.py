@@ -41,6 +41,11 @@ async def lanterns():
     return await render_template('lanterns.html')
 
 
+@app.route('/live_state')
+async def live_state():
+    return await render_template('live_state.html')
+
+
 @app.websocket('/ws')
 async def ws():
     await websocket.accept()
