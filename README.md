@@ -1,6 +1,8 @@
 # Midnight Museum
 Code to drive the lights for the Midnight Museum of That One Time at Burningman
 
+https://www.facebook.com/Fingertightart/
+
 ## Architecture
 
 The project uses light bulbs and microcontrollers with the ESPHome firmware loaded. The main code connects directly to each bulb and issues commands.
