@@ -28,9 +28,26 @@ This allows the light patterns to be defined by an image file - if you want wave
 
 ## Installing
 
+Use [Poetry](https://python-poetry.org/)
+
+Once Poetry is installed, use git to check out the repo, then use
+
+> poetry install
+
+To install all the dependencies.
+
+Run
+
+> poetry shell
+
+to open a shell with the virtual environment is set up. Once in that shell, you can run the application with
+
+> python main.py
+
 ### Raspberry Pi
 
-Use Poetry
+
+Poetry installer:
 
 - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
 
