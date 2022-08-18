@@ -6,6 +6,10 @@ import traceback
 
 from effect_base import Effect as BaseEffect
 from effect_test_pattern import TestPattern
+from effect_lighthouse import LighthousePattern
+from effect_diagonal_hue import DiagonalHuePattern
+from effect_ripple import RipplePattern
+from effect_party import PartyPattern
 
 log = logging.getLogger(__name__)
 
@@ -28,7 +32,7 @@ class Commands:
     load_image = "LOAD_IMAGE"
 
 
-FRAME_SECONDS = 0.2
+FRAME_SECONDS = 0.4
 
 
 class EffectsHandler:
@@ -43,7 +47,7 @@ class EffectsHandler:
         # Instantiate a base effect for use as a "last position"
         self._last_effect = BaseEffect()
 
-        self.effect = TestPattern()
+        self.effect = DiagonalHuePattern()
         self.level = 1.0
 
     @property
@@ -90,7 +94,7 @@ class EffectsHandler:
         # Walk through any pixels that changed
         for (row, col), color in self._last_effect.get_diff(self.effect):
             log.debug(f'changed {col=} {row=} {color=}')
-            transition_length = 0.1
+            transition_length = self.effect.transition_length[row][col]
             # This might be reworked to use the same call
             self.lights[row][col].command(
                 rgb=color,
