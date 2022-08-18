@@ -4,6 +4,7 @@
 class Effect:
     def __init__(self):
         self.pattern = [[None] * 5 for _ in range(5)]
+        self.transition_length = [[0.1] * 5 for _ in range(5)]
 
     def next_frame(self):
         '''Calculate the next thing.'''

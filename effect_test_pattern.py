@@ -22,7 +22,7 @@ class TestPattern(Effect):
             self.pattern[idx] = rainbow
 
     def next_frame(self):
-        # caled every 0.2 seconds
+        # caled every 0.4 seconds
         self.step += 1
 
         # start with all the lights on
