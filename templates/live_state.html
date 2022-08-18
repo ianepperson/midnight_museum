@@ -2,8 +2,97 @@
 {% block content %}
 <div>
     <h3>This is the live state of the lights</h3>
-    <!-- Leo, you can fill this in -->
-    <p>Nothing yet</p>
 
+
+
+
+
+
+    <script>
+
+        function tableCreate(width) {
+            const body = document.body, tbl = document.createElement("table");
+            tbl.style.border = "2px solid black";
+            tbl.style.borderSpacing = "0px"
+
+            const imgSize = width * 0.15, imgSrc = "../static/lightbulb_on.png";
+
+            var imgs = Array(24);
+
+            for (let i = 0; i < 5; i++) {
+                const tr = tbl.insertRow();
+                for (let j = 0; j < 5; j++) {
+                    const td = tr.insertCell();
+                    td.style.border = '2px solid black';
+                    td.style.padding = (width * 0.025).toString() + "px"
+
+                    const lanternImage = new Image(imgSize, imgSize);
+                    lanternImage.src = imgSrc;
+                    lanternImage.style.transition = "background-color 0.1s"
+                    td.appendChild(lanternImage);
+
+
+                    imgs[i * 5 + j] = lanternImage
+                }
+            }
+            body.appendChild(tbl)
+            return imgs
+        }
+        const imgs = tableCreate(500);
+
+        function setState(x, y, on, rgb, brightness, transitionTime) {
+            let index = x * 5 + y
+
+            if (rgb[0] + rgb[1] + rgb[2] == 0 || brightness == 0 || !on) {
+                imgs[index].src = "../static/lightbulb_off.png"
+            } else {
+                imgs[index].src = "../static/lightbulb_on.png"
+            }
+            imgs[index].style.transition = "background-color " + transitionTime + "s linear"
+            imgs[index].style.backgroundColor = "rgb(" + rgb[0] * 255 * brightness + ", " + rgb[1] * 255 * brightness + ", " + rgb[2] * 255 * brightness + ")"
+        }
+
+
+
+        const socket = new WebSocket(url = "ws://localhost:8080/ws")
+
+        function changeColor(event) {
+            // how quickly the lights change to their new color
+
+            var jsonpayload = event.data
+
+
+            var payload = JSON.parse(jsonpayload)
+
+            let message = payload[0], data = payload[1]
+
+            switch (message) {
+                case "started":
+                    console.log("connected");
+                    break;
+                case "light info":
+                    for (let i = 0; i < 5; i++) {
+                        for (let j = 0; j < 5; j++) {
+                            let light = data[i][j]
+                            setState(i, j, true, light.rgb, light.brightness, 0)
+                        }
+                    }
+
+                    break;
+                case "light change":
+
+                    setState(data.position[0], data.position[1], true, data.rgb, data.brightness, data.transition_length)
+
+                    break;
+                case "closed":
+                    console.log("closed")
+                    alert("closed; refresh page")
+                    break;
+            }
+        }
+
+        socket.addEventListener("message", changeColor)
+        socket.addEventListener("close", (handler) => alert("disconnected"))
+    </script>
 </div>
 {% endblock %}
