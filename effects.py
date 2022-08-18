@@ -95,19 +95,19 @@ class EffectsHandler:
             self.lights[row][col].command(
                 rgb=color,
                 color_brightness=self.level,
-                transition_length=transition_length
+                transition_length=transition_length,
             )
             self._send_to_change_queues(
                 position=(row, col),
                 rgb=color,
-                color_brightness=self.level,
-                transition_length=transition_length
+                brightness=self.level,
+                transition_length=transition_length,
             )
 
     def _next_frame(self) -> float:
-        '''
+        """
         Runs the next frame and returns how long to wait before calling again
-        '''
+        """
         now = time()
         next_time = self._last_frame_time + FRAME_SECONDS
         # we haven't reached our time yet
