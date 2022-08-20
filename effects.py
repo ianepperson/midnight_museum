@@ -47,7 +47,7 @@ class EffectsHandler:
         # Instantiate a base effect for use as a "last position"
         self._last_effect = BaseEffect()
 
-        self.effect = DiagonalHuePattern()
+        self.effect = RipplePattern()
         self.level = 1.0
 
     @property
@@ -72,7 +72,7 @@ class EffectsHandler:
         '''Get a queue that sends all light changes as events.'''
         # 5x5 grid, 2 frames max = 50
         # If the queue overflows, it's automatically culled
-        changes = Queue(maxsize=50)
+        changes = Queue(maxsize=100)
         self._change_queues.append(changes)
         return changes
 

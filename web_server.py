@@ -58,5 +58,6 @@ async def ws():
         # We'll get a single 'closed' message if the changes queue fills
         # which might happen if the connection is too slow.
         if message == 'closed':
+            log.warning('fx_changes overflowed and closed')
             await websocket.close(1000)
             return
