@@ -56,6 +56,12 @@ if __name__ == '__main__':
         type=int,
         default=8080
     )
+    parser.add_argument(
+        '--profile',
+        metavar='FILENAME',
+        help='Run with the profiler and dump to file',
+        default=None
+    )
 
     # Grab the arguments
     args = parser.parse_args()
@@ -65,4 +71,20 @@ if __name__ == '__main__':
     # go(setup, args.http_server_port)
 
     app_ = create_app()
-    app_.run(port=args.http_server_port, host='0.0.0.0')
+
+    if not args.profile:
+        app_.run(port=args.http_server_port, host='0.0.0.0')
+
+    if args.profile:
+        import cProfile
+        import pstats
+
+        with cProfile.Profile() as pr:
+            app_.run(port=args.http_server_port, host='0.0.0.0')
+
+        stats = pstats.Stats(pr)
+        stats.sort_stats(pstats.SortKey.TIME)
+        if args.profile == 'stdout':
+            stats.print_stats()
+        else:
+            stats.dump_stats(filename=args.profile)
