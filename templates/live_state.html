@@ -91,7 +91,10 @@
         }
 
         function buildSocket() {
-            const socket = new WebSocket(url = "ws://localhost:8080/ws")
+            const socket = new WebSocket(url = "ws://" + location.host + "/ws")
+            socket.addEventListener("open", (event) => {
+                        console.log("Websocket open", event);
+                })
             socket.addEventListener("message", changeColor)
             socket.addEventListener("close", (handler) => alert("disconnected"))
         }
