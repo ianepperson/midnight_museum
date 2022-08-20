@@ -54,7 +54,6 @@
 
 
 
-        const socket = new WebSocket(url = "ws://localhost:8080/ws")
 
         function changeColor(event) {
             // how quickly the lights change to their new color
@@ -91,8 +90,14 @@
             }
         }
 
-        socket.addEventListener("message", changeColor)
-        socket.addEventListener("close", (handler) => alert("disconnected"))
+        function buildSocket() {
+            const socket = new WebSocket(url = "ws://localhost:8080/ws")
+            socket.addEventListener("message", changeColor)
+            socket.addEventListener("close", (handler) => alert("disconnected"))
+        }
+
+        // Wait for a half second before connecting the socket
+        setTimeout(buildSocket, 500);
     </script>
 </div>
 {% endblock %}
