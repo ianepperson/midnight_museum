@@ -26,8 +26,8 @@ class Setup:
             self.assignment.append([None] * GRID_SIZE)
 
         self.effects_image = None
-        self.mqtt_host = '127.0.0.1'
-        self.mqtt_port = 1883
+        self.effect_run_seconds = 300  # 5 minutes default
+        self.effect_run_seconds = 10  # for testing
 
         # Load the file over the defaults
 

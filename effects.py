@@ -36,6 +36,16 @@ FRAME_SECONDS = 0.4
 
 
 class EffectsHandler:
+    all_effects = {
+        'test pattern': TestPattern,
+        'lighthouse': LighthousePattern,
+        'diagonal hue': DiagonalHuePattern,
+        'ripple': RipplePattern,
+        'party': PartyPattern,
+    }
+
+    effect_sequence = ['party', 'diagonal hue', 'ripple', 'lighthouse']
+
     def __init__(self, setup, lights):
         self.lights = lights
         self.setup = setup
@@ -47,7 +57,9 @@ class EffectsHandler:
         # Instantiate a base effect for use as a "last position"
         self._last_effect = BaseEffect()
 
-        self.effect = RipplePattern()
+        self.current_effect = None
+        self._current_effect_start_time = 0.0
+        self.effect = None
         self.level = 1.0
 
     @property
@@ -59,6 +71,8 @@ class EffectsHandler:
             log.info('Effects server already started')
             return
 
+        self.check_select_next_effect()
+
         self._effects_thread = create_task(self._handle_effects())
         self._started = True
         log.info('Effects server started')
@@ -67,6 +81,32 @@ class EffectsHandler:
         if self._effects_thread:
             self._effects_thread.cancel()
         self._started = False
+
+    def select_effect(self, effect_name):
+        new_effect = self.all_effects.get(effect_name)
+        if not new_effect:
+            log.warning(f'Invalid effect name: {effect_name}')
+            return
+        self.current_effect = effect_name
+        self.effect = new_effect()
+        self._current_effect_start_time = time()
+
+    def check_select_next_effect(self):
+        if not self.current_effect:
+            self.select_effect(self.effect_sequence[0])
+            return
+
+        elapsed_time = time() - self._current_effect_start_time
+        if elapsed_time > self.setup.effect_run_seconds:
+            try:
+                current_index = self.effect_sequence.index(self.current_effect)
+            except ValueError:
+                current_index = -1
+            if current_index + 1 >= len(self.effect_sequence):
+                current_index = -1
+
+            new_index = current_index + 1
+            self.select_effect(self.effect_sequence[new_index])
 
     def get_change_queue(self) -> Queue:
         '''Get a queue that sends all light changes as events.'''
@@ -112,6 +152,7 @@ class EffectsHandler:
         """
         Runs the next frame and returns how long to wait before calling again
         """
+        self.check_select_next_effect()
         now = time()
         next_time = self._last_frame_time + FRAME_SECONDS
         # we haven't reached our time yet
