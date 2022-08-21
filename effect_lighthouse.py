@@ -4,23 +4,24 @@ from effect_base import Effect
 white = (1.0, 1.0, 1.0)
 off = (0, 0, 0)
 loop = [0, 1, 2, 3, 4, 9, 14, 19, 24, 23, 22, 21, 20, 15, 10, 5]
-loop_pairs = (
-    [0, 0],
-    [0, 1],
-    [0, 2],
-    [0, 3],
-    [0, 4],
-    [1, 4],
-    [2, 4],
-    [3, 4],
-    [4, 4],
-    [4, 3],
-    [4, 2],
-    [4, 1],
-    [4, 0],
-    [3, 0],
-    [2, 0],
-    [1, 0]
+
+steps = (
+    [[0, 0], [1, 1]],
+    [[0, 1]],
+    [[0, 2], [1, 2]],
+    [[0, 3]],
+    [[0, 4], [1, 3]],
+    [[1, 4]],
+    [[2, 4], [2, 3]],
+    [[3, 4]],
+    [[4, 4], [3, 3]],
+    [[4, 3]],
+    [[4, 2], [3, 2]],
+    [[4, 1]],
+    [[4, 0], [3, 1]],
+    [[3, 0]],
+    [[2, 0], [2, 1]],
+    [[1, 0]]
 )
 
 
@@ -73,18 +74,22 @@ class LighthousePattern(Effect):
     def setLantern(self, index, color):
         self.pattern[index // 5][index % 5] = color
 
+    def set_lantern(self, idx, color, transition):
+        self.pattern[idx[0]][idx[1]] = color
+        self.transition_length[idx[0]][idx[1]] = transition
+
     def next_frame(self):
         # called every 0.4 seconds
         self.last_step = self.step
         self.step += 1
-        if self.step >= len(loop_pairs):
+        if self.step >= len(steps):
             self.step = 0
 
-        lit = loop_pairs[self.step]
-        dark = loop_pairs[self.last_step]
+        lit = steps[self.step]
+        dark = steps[self.last_step]
 
-        self.pattern[lit[0]][lit[1]] = white
-        self.transition_length[lit[0]][lit[1]] = 0.2
+        for idx in lit:
+            self.set_lantern(idx, white, 0.2)
 
-        self.pattern[dark[0]][dark[1]] = (0.1, 0.1, 0.1)
-        self.transition_length[dark[0]][dark[1]] = 5
+        for idx in dark:
+            self.set_lantern(idx, (0.1, 0.1, 0.1), 5)
