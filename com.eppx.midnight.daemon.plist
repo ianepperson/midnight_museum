@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.eppx.midnight.daemon</string>
+    <key>ServiceDescription</key>
+    <string>Midnight Museum Lights Runner</string>
+
+    <key>UserName</key>
+    <string>ianepperson</string>
+    <key>WorkingDirectory</key>
+    <string>/Users/ianepperson/src/midnight_museum</string>
+
+    <key>StandardErrorPath</key>
+    <string>/var/log/midnight_museum.log</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>midnight</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+</dict>
+</plist>

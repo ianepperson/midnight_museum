@@ -1,0 +1,8 @@
+#!/bin/zsh
+
+# Enable pyenv to function
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+
+caffeinate -s poetry run python main.py
