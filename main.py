@@ -10,7 +10,7 @@ from setup import Setup
 from web_server import app
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def create_app():
