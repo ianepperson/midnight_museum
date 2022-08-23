@@ -8,8 +8,6 @@
     <key>ServiceDescription</key>
     <string>Midnight Museum Lights Runner</string>
 
-    <key>UserName</key>
-    <string>ianepperson</string>
     <key>WorkingDirectory</key>
     <string>/Users/ianepperson/src/midnight_museum</string>
 

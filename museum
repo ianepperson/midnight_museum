@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+su ianepperson
+
 # Enable pyenv to function
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
