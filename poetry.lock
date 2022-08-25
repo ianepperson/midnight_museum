@@ -235,6 +235,18 @@ funcsigs = ["funcsigs"]
 testing = ["funcsigs", "pytest"]
 
 [[package]]
+name = "pillow"
+version = "9.2.0"
+description = "Python Imaging Library (Fork)"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+docs = ["furo", "olefile", "sphinx (>=2.4)", "sphinx-copybutton", "sphinx-issues (>=3.0.1)", "sphinx-removed-in", "sphinxext-opengraph"]
+tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "packaging", "pyroma", "pytest", "pytest-cov", "pytest-timeout"]
+
+[[package]]
 name = "priority"
 version = "2.0.0"
 description = "A pure-Python implementation of the HTTP/2 priority tree"
@@ -373,7 +385,7 @@ docs = ["jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "jaraco.packaging (>=9)
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "72c131a359b0472f2e4eb806d3f41db69632621eb8625e3741e65b219808059c"
+content-hash = "251a717e16b1453d850fffb2ff03bb9b8426dd878a4e54706a10b0dcf5e80488"
 
 [metadata.files]
 aioesphomeapi = []
@@ -403,6 +415,7 @@ pdbpp = [
     {file = "pdbpp-0.10.3-py2.py3-none-any.whl", hash = "sha256:79580568e33eb3d6f6b462b1187f53e10cd8e4538f7d31495c9181e2cf9665d1"},
     {file = "pdbpp-0.10.3.tar.gz", hash = "sha256:d9e43f4fda388eeb365f2887f4e7b66ac09dce9b6236b76f63616530e2f669f5"},
 ]
+pillow = []
 priority = []
 protobuf = []
 pycparser = []

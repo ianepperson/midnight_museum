@@ -10,6 +10,7 @@ from effect_lighthouse import LighthousePattern
 from effect_diagonal_hue import DiagonalHuePattern
 from effect_ripple import RipplePattern
 from effect_party import PartyPattern
+from effect_image_scan import RandomImageScan
 
 log = logging.getLogger(__name__)
 
@@ -42,9 +43,11 @@ class EffectsHandler:
         'diagonal hue': DiagonalHuePattern,
         'ripple': RipplePattern,
         'party': PartyPattern,
+        'random image': RandomImageScan,
     }
 
-    effect_sequence = ['party', 'diagonal hue', 'ripple', 'lighthouse']
+    # effect_sequence = ['party', 'diagonal hue', 'ripple', 'lighthouse']
+    effect_sequence = ['random image', 'lighthouse', 'random image', 'party']
 
     def __init__(self, setup, lights):
         self.lights = lights
