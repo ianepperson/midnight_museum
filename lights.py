@@ -94,7 +94,7 @@ class Light:
             except Exception as e:
                 log.error(f'Could not connect to {self.host}: {e!r}')
                 self.state = f'Connection error {e!r}'
-                sleep(10)
+                await sleep(10)
                 continue
 
             self._spawn_handlers()
@@ -117,7 +117,7 @@ class Light:
                 log.error(f'{self.host} Error while sending. {e!r}')
                 self.state = f'Transmission error {e!r}'
                 log.debug(f'{self.host} pausing for 10 seconds to reconnect')
-                sleep(10)
+                await sleep(10)
             finally:
                 await self.client.disconnect()
 
