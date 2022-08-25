@@ -27,7 +27,7 @@ class Setup:
 
         self.effects_image = None
         self.effect_run_seconds = 300  # 5 minutes default
-        self.effect_run_seconds = 10  # for testing
+        # self.effect_run_seconds = 10  # for testing
 
         # Load the file over the defaults
 
